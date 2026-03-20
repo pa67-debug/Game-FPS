@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class PlayerHealth : MonoBehaviour
 {
@@ -7,8 +8,9 @@ public class PlayerHealth : MonoBehaviour
     int currentHealth;
 
     public Image hpImage;
-
     public Sprite[] hpSprites;
+
+    public TextMeshProUGUI hpText;   // UI แสดง %
 
     void Start()
     {
@@ -38,5 +40,10 @@ public class PlayerHealth : MonoBehaviour
     {
         int index = currentHealth / 10;
         hpImage.sprite = hpSprites[index];
+
+        // คำนวณเปอร์เซ็นต์
+        int percent = Mathf.RoundToInt((float)currentHealth / maxHealth * 100f);
+
+        hpText.text = percent + "%";
     }
 }

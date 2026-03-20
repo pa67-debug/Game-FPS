@@ -1,5 +1,6 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections;
+using TMPro;
 
 public class GunShoot : MonoBehaviour
 {
@@ -8,19 +9,74 @@ public class GunShoot : MonoBehaviour
     public LineRenderer tracer;
     public RectTransform crosshair;
 
+    public Animator anim;
+
+    [Header("Gun")]
     public float range = 100f;
     public int damage = 25;
 
+    [Header("Ammo")]
+    public int maxAmmo = 30;
+    public int currentAmmo;
+    public int totalAmmo = 90;
+
+    bool isReloading = false;
+
+    public float reloadTime = 3f;
+
+    [Header("Sound")]
+    public AudioSource audioSource;
+    public AudioClip shootSound;
+    public AudioClip reloadSound;
+    public AudioClip emptySound;
+
+    [Header("UI")]
+    public TextMeshProUGUI ammoText;
+
+    void Start()
+    {
+        currentAmmo = maxAmmo;
+        UpdateAmmoUI();
+    }
+
     void Update()
     {
+        if (isReloading) return;
+
+        // Reload
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            StartCoroutine(Reload());
+            return;
+        }
+
+        // Shoot
         if (Input.GetMouseButtonDown(0))
         {
+            if (currentAmmo <= 0)
+            {
+                if (emptySound != null)
+                    audioSource.PlayOneShot(emptySound);
+
+                anim.ResetTrigger("Shoot");
+                return;
+            }
+
             Shoot();
         }
     }
 
     void Shoot()
     {
+        currentAmmo--;
+
+        anim.SetTrigger("Shoot");
+
+        if (shootSound != null)
+            audioSource.PlayOneShot(shootSound);
+
+        UpdateAmmoUI();
+
         Ray ray = cam.ScreenPointToRay(crosshair.position);
 
         RaycastHit hit;
@@ -34,18 +90,7 @@ public class GunShoot : MonoBehaviour
 
             if (monster != null)
             {
-                int finalDamage = damage;
-
-                if (hit.collider.CompareTag("Body"))
-                {
-                    finalDamage = damage - 10;
-                }
-                else if (hit.collider.CompareTag("Head"))
-                {
-                    finalDamage = damage;
-                }
-
-                monster.TakeDamage(finalDamage);
+                monster.TakeDamage(damage);
             }
         }
         else
@@ -54,6 +99,43 @@ public class GunShoot : MonoBehaviour
         }
 
         StartCoroutine(ShowTracer(muzzle.position, targetPoint));
+    }
+
+    IEnumerator Reload()
+    {
+        if (totalAmmo <= 0 || currentAmmo == maxAmmo)
+            yield break;
+
+        isReloading = true;
+
+        anim.SetTrigger("Reload");
+
+        if (reloadSound != null)
+            audioSource.PlayOneShot(reloadSound);
+
+        yield return new WaitForSeconds(reloadTime);
+
+        int need = maxAmmo - currentAmmo;
+
+        if (totalAmmo >= need)
+        {
+            currentAmmo = maxAmmo;
+            totalAmmo -= need;
+        }
+        else
+        {
+            currentAmmo += totalAmmo;
+            totalAmmo = 0;
+        }
+
+        UpdateAmmoUI();
+
+        isReloading = false;
+    }
+
+    void UpdateAmmoUI()
+    {
+        ammoText.text = currentAmmo + " / " + totalAmmo;
     }
 
     IEnumerator ShowTracer(Vector3 start, Vector3 end)
