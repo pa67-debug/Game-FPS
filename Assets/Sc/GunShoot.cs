@@ -41,6 +41,8 @@ public class GunShoot : MonoBehaviour
 
     void Update()
     {
+        UpdateAmmoUI(); // อัปเดตกระสุน
+
         if (isReloading) return;
 
         // Reload
@@ -135,14 +137,16 @@ public class GunShoot : MonoBehaviour
 
     void UpdateAmmoUI()
     {
-        ammoText.text = currentAmmo + " / " + totalAmmo;
+        if (ammoText != null)
+        {
+            ammoText.text = currentAmmo + " / " + totalAmmo;
+        }
     }
 
     IEnumerator ShowTracer(Vector3 start, Vector3 end)
     {
         tracer.SetPosition(0, start);
         tracer.SetPosition(1, end);
-
         tracer.enabled = true;
 
         yield return new WaitForSeconds(0.05f);

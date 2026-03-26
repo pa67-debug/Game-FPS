@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using TMPro;
 using System.Collections;
 
@@ -14,13 +14,20 @@ public class WaveManager : MonoBehaviour
     public float waveTime = 180f;
     public float breakTime = 10f;
 
+    [Header("Spawn Settings")]
+    public float spawnDelay = 0.6f;
+
     [Header("Monster")]
     public GameObject monsterPrefab;
     public Transform[] spawnPoints;
 
+    [Header("Portal")]
+    public GameObject portalPrefab;
+
     [Header("UI")]
     public TMP_Text waveText;
     public TMP_Text timerText;
+    public TMP_Text monsterText;
 
     int monstersAlive = 0;
 
@@ -42,7 +49,7 @@ public class WaveManager : MonoBehaviour
         {
             currentWave++;
 
-            StartWave();
+            yield return StartCoroutine(StartWave());
 
             yield return StartCoroutine(WaveTimer());
 
@@ -67,17 +74,19 @@ public class WaveManager : MonoBehaviour
         }
     }
 
-    void StartWave()
+    IEnumerator StartWave()
     {
         waveText.text = "WAVE " + currentWave;
 
         int monsterCount = 5 + (currentWave - 1) * 4;
 
         monstersAlive = monsterCount;
+        UpdateMonsterUI();
 
         for (int i = 0; i < monsterCount; i++)
         {
             SpawnMonster();
+            yield return new WaitForSeconds(spawnDelay);
         }
     }
 
@@ -91,7 +100,7 @@ public class WaveManager : MonoBehaviour
 
             if (monstersAlive <= 0)
             {
-                break;
+                yield break;
             }
 
             timer -= Time.deltaTime;
@@ -115,11 +124,21 @@ public class WaveManager : MonoBehaviour
     {
         Transform spawn = spawnPoints[Random.Range(0, spawnPoints.Length)];
 
+        GameObject portal = Instantiate(portalPrefab, spawn.position, Quaternion.identity);
+
         Instantiate(monsterPrefab, spawn.position, Quaternion.identity);
+
+        Destroy(portal, 1f);
     }
 
     public void MonsterDied()
     {
         monstersAlive--;
+        UpdateMonsterUI();
+    }
+
+    void UpdateMonsterUI()
+    {
+        monsterText.text = "X " + monstersAlive;
     }
 }
