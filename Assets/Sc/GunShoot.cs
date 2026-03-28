@@ -12,7 +12,7 @@ public class GunShoot : MonoBehaviour
     public Animator anim;
 
     [Header("Gun")]
-    public float range = 100f;
+    public float range = 1000f;
     public int damage = 25;
 
     [Header("Ammo")]

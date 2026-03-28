@@ -61,16 +61,23 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Sc\GameOverManager.cs" />
+    <Compile Include="Assets\Sc\MainMenu.cs" />
+    <Compile Include="Assets\TX\M\BushWind.cs" />
+    <Compile Include="Assets\Sc\MedkitPickup.cs" />
     <Compile Include="Assets\Sc\MonsterAI.cs" />
     <Compile Include="Assets\Sc\AmmoPickup.cs" />
     <Compile Include="Assets\Sc\MonsterHealth.cs" />
+    <Compile Include="Assets\Sc\AmmoSpawner.cs" />
     <Compile Include="Assets\Sc\GunAnimation.cs" />
+    <Compile Include="Assets\TX\M\TreeWind.cs" />
     <Compile Include="Assets\Sc\SceneSound.cs" />
     <Compile Include="Assets\Sc\WaveManager.cs" />
     <Compile Include="Assets\Sc\PlayerMovement.cs" />
     <Compile Include="Assets\Sc\GunShoot.cs" />
     <Compile Include="Assets\Sc\MouseLook.cs" />
+    <Compile Include="Assets\Sc\MedkitSpawner.cs" />
     <Compile Include="Assets\Sc\PlayerHealth.cs" />
+    <Compile Include="Assets\Sc\MenuSound.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />

@@ -1,4 +1,4 @@
-using UnityEngine;
+Ôªøusing UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections;
@@ -10,8 +10,16 @@ public class PlayerHealth : MonoBehaviour
 
     public Image hpImage;
     public Sprite[] hpSprites;
-
     public TextMeshProUGUI hpText;
+
+    [Header("Medkit")]
+    public int medkitCount = 0;
+    public int healAmount = 25;
+    public TextMeshProUGUI medkitText;
+
+    [Header("Heal Sound")]
+    public AudioSource audioSource;
+    public AudioClip healSound;
 
     [Header("Damage Screen")]
     public Image damageImage;
@@ -20,7 +28,7 @@ public class PlayerHealth : MonoBehaviour
     public GameObject gameOverPanel;
 
     [Header("UI To Hide")]
-    public GameObject gameUI;   // UI ∑—ÈßÀ¡¥¢Õß‡°¡ (HP / Ammo / Wave)
+    public GameObject gameUI;
 
     void Start()
     {
@@ -32,6 +40,7 @@ public class PlayerHealth : MonoBehaviour
             gameOverPanel.SetActive(false);
 
         UpdateHP();
+        UpdateMedkitUI();
     }
 
     void Update()
@@ -40,6 +49,39 @@ public class PlayerHealth : MonoBehaviour
         {
             TakeDamage(10);
         }
+
+        // üíä ‡∏Å‡∏î E ‡πÉ‡∏ä‡πâ‡∏¢‡∏≤ + ‡πÄ‡∏•‡πà‡∏ô‡πÄ‡∏™‡∏µ‡∏¢‡∏á
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            UseMedkit();
+        }
+    }
+
+    public void AddMedkit(int amount)
+    {
+        medkitCount += amount;
+        UpdateMedkitUI();
+    }
+
+    void UseMedkit()
+    {
+        if (medkitCount <= 0) return;
+        if (currentHealth >= maxHealth) return;
+
+        medkitCount--;
+
+        currentHealth += healAmount;
+        if (currentHealth > maxHealth)
+            currentHealth = maxHealth;
+
+        // üîä ‡πÄ‡∏•‡πà‡∏ô‡πÄ‡∏™‡∏µ‡∏¢‡∏á‡∏Æ‡∏µ‡∏•
+        if (healSound != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(healSound);
+        }
+
+        UpdateHP();
+        UpdateMedkitUI();
     }
 
     public void TakeDamage(int damage)
@@ -65,23 +107,18 @@ public class PlayerHealth : MonoBehaviour
         if (gameOverPanel != null)
             gameOverPanel.SetActive(true);
 
-        // ª‘¥‡ ’¬ß
         AudioListener.pause = true;
 
-        // ª≈¥≈ÁÕ°‡¡“ Ï
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
-        // À¬ÿ¥‡«≈“
         Time.timeScale = 0f;
     }
 
     IEnumerator DamageFlash()
     {
         damageImage.enabled = true;
-
         yield return new WaitForSeconds(0.2f);
-
         damageImage.enabled = false;
     }
 
@@ -92,5 +129,13 @@ public class PlayerHealth : MonoBehaviour
 
         int percent = Mathf.RoundToInt((float)currentHealth / maxHealth * 100f);
         hpText.text = percent + "%";
+    }
+
+    void UpdateMedkitUI()
+    {
+        if (medkitText != null)
+        {
+            medkitText.text = "X" + medkitCount;
+        }
     }
 }

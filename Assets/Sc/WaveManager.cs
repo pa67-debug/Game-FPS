@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using TMPro;
 using System.Collections;
+using UnityEngine.SceneManagement;
+using UnityEngine.EventSystems;
 
 public class WaveManager : MonoBehaviour
 {
@@ -29,7 +31,14 @@ public class WaveManager : MonoBehaviour
     public TMP_Text timerText;
     public TMP_Text monsterText;
 
+    [Header("Victory UI")]
+    public GameObject victoryPanel;
+    public TMP_Text finalTimeText;
+
     int monstersAlive = 0;
+
+    float gameTime = 0f;
+    bool isGameEnded = false;
 
     void Awake()
     {
@@ -38,7 +47,16 @@ public class WaveManager : MonoBehaviour
 
     void Start()
     {
+        victoryPanel.SetActive(false);
         StartCoroutine(GameLoop());
+    }
+
+    void Update()
+    {
+        if (!isGameEnded)
+        {
+            gameTime += Time.deltaTime;
+        }
     }
 
     IEnumerator GameLoop()
@@ -59,7 +77,7 @@ public class WaveManager : MonoBehaviour
             }
         }
 
-        timerText.text = "ALL WAVES CLEARED";
+        EndGame();
     }
 
     IEnumerator StartCountdown()
@@ -124,7 +142,9 @@ public class WaveManager : MonoBehaviour
     {
         Transform spawn = spawnPoints[Random.Range(0, spawnPoints.Length)];
 
-        GameObject portal = Instantiate(portalPrefab, spawn.position, Quaternion.identity);
+        Quaternion rot = spawn.rotation * Quaternion.Euler(0, 0, 90);
+
+        GameObject portal = Instantiate(portalPrefab, spawn.position, rot);
 
         Instantiate(monsterPrefab, spawn.position, Quaternion.identity);
 
@@ -133,12 +153,65 @@ public class WaveManager : MonoBehaviour
 
     public void MonsterDied()
     {
+        if (isGameEnded) return;
+
         monstersAlive--;
         UpdateMonsterUI();
+
+        if (currentWave == maxWaves && monstersAlive <= 0)
+        {
+            EndGame();
+        }
     }
 
     void UpdateMonsterUI()
     {
         monsterText.text = "X " + monstersAlive;
+    }
+
+    void EndGame()
+    {
+        if (isGameEnded) return;
+
+        isGameEnded = true;
+
+        victoryPanel.SetActive(true);
+
+        int minutes = Mathf.FloorToInt(gameTime / 60);
+        int seconds = Mathf.FloorToInt(gameTime % 60);
+
+        finalTimeText.text = "TIME: " + minutes.ToString("00") + ":" + seconds.ToString("00");
+
+        Time.timeScale = 0f;
+
+        // 🔥 แก้ปุ่มกดไม่ได้
+        EnableUI();
+    }
+
+    void EnableUI()
+    {
+        // ปลดล็อกเมาส์
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
+        // รีเฟรช EventSystem กันบัค
+        if (EventSystem.current != null)
+        {
+            EventSystem.current.SetSelectedGameObject(null);
+        }
+    }
+
+    // 🔁 ปุ่ม Replay
+    public void Replay()
+    {
+        Time.timeScale = 1f;
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    // 🏠 ปุ่ม Menu
+    public void MainMenu()
+    {
+        Time.timeScale = 1f;
+        SceneManager.LoadScene("Main Menu");
     }
 }
